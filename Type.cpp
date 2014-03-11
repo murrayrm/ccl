@@ -10,7 +10,7 @@
 //   modify it under the terms of the GNU General Public License
 //   as published by the Free Software Foundation; either version 2
 //   of the License, or (at your option) any later version.
-// 
+//
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -21,6 +21,10 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 //
+
+#ifdef LINUX
+#include <string.h>
+#endif
 
 #include "Type.h"
 #include "Expr.h"
@@ -40,7 +44,7 @@ TypeExpr::TypeExpr ( void ) : consistent(true), type(VARIABLE) {
 
 }
 
-void TypeExpr::set_instance ( TypeExpr * t ) { 
+void TypeExpr::set_instance ( TypeExpr * t ) {
 
   ASSERT ( type == VARIABLE );
   instance = t;
@@ -98,10 +102,10 @@ TypeExpr::~TypeExpr ( void ) {
   type_expr_instances--;
 
 #ifdef MEMCHECK
-  if ( type_expr_instances == 0 ) 
+  if ( type_expr_instances == 0 )
     printf ( "  no type exprs left\n" );
 #endif
-  if ( type_expr_instances < 0 ) 
+  if ( type_expr_instances < 0 )
     fprintf ( stderr, "  Warning::deleted too many type exprs!\n" );
 
   if ( type == RECORD && fields != NULL ) {
@@ -254,7 +258,7 @@ TypeExpr * TypeExpr::get_list_base ( void ) {
 
 }
 
-Value::TYPE TypeExpr::get_atomic_type ( void ) { 
+Value::TYPE TypeExpr::get_atomic_type ( void ) {
 
   if ( type == VARIABLE ) {
 
@@ -263,7 +267,7 @@ Value::TYPE TypeExpr::get_atomic_type ( void ) {
     else
       ASSERT_MSG ( false, "Tried to get atomic type of non atomic\n" );
 
-  } else if ( type == ATOMIC ) { 
+  } else if ( type == ATOMIC ) {
 
     return atomic;
 
@@ -271,7 +275,7 @@ Value::TYPE TypeExpr::get_atomic_type ( void ) {
 
 }
 
-TypeExpr::TYPE TypeExpr::get_type ( void ) { 
+TypeExpr::TYPE TypeExpr::get_type ( void ) {
 
   if ( type == VARIABLE ) {
 
@@ -280,7 +284,7 @@ TypeExpr::TYPE TypeExpr::get_type ( void ) {
     else
       return VARIABLE;
 
-  } else 
+  } else
 
     return type;
 
@@ -484,7 +488,7 @@ void TypeExpr::print_aux ( FILE * fp ) {
 
       if ( consistent )
         fprintf ( fp, "..." );
-      else 
+      else
 	fprintf ( fp, "<<inconsistent type>>" );
       break;
 
@@ -506,7 +510,7 @@ void TypeExpr::print_aux ( FILE * fp ) {
 
 	}
 
-	if ( extensible ) 
+	if ( extensible )
 	  fprintf ( fp, ", ... " );
 
 	fprintf ( fp, " ]" );
@@ -515,7 +519,7 @@ void TypeExpr::print_aux ( FILE * fp ) {
 
       break;
 
-    default: 
+    default:
 
       fprintf ( fp, "<<UNKOWN TYPE (this is a bug)>>" );
 
@@ -720,7 +724,7 @@ TypeExpr * TypeExpr::prune ( TypeExpr * T ) {
 
   if ( T->type == VARIABLE ) {
 
-    if ( T->instance == NULL ) 
+    if ( T->instance == NULL )
       answer = T;
     else {
       T->instance = prune ( T->instance );
@@ -748,7 +752,7 @@ bool TypeExpr::unify ( TypeExpr * T1, TypeExpr * T2 ) {
 
     case VARIABLE:
 
-      if ( occurs_in ( T1, T2 ) ) 
+      if ( occurs_in ( T1, T2 ) )
 	answer = ( T1 == T2 );
       else {
 	T1->set_instance ( T2 );
@@ -767,7 +771,7 @@ bool TypeExpr::unify ( TypeExpr * T1, TypeExpr * T2 ) {
 
         case ATOMIC:
 
-	  if ( ( T1->atomic == Value::REAL && T2->atomic == Value::INTEGER ) || 
+	  if ( ( T1->atomic == Value::REAL && T2->atomic == Value::INTEGER ) ||
 	       ( T1->atomic == Value::INTEGER && T2->atomic == Value::REAL ) )
 
 	    answer = true;
@@ -854,7 +858,7 @@ bool TypeExpr::unify ( TypeExpr * T1, TypeExpr * T2 ) {
 
 	      TypeExpr * T = RETRIEVE ( f2, f1->name );
 
-	      if ( T != NULL ) 
+	      if ( T != NULL )
 		answer = answer && unify ( T, f1->T );
 	      else if ( T2->is_extensible() ) {
 		f2 = new Environment ( f1->name, f1->T, f2 );
@@ -875,7 +879,7 @@ bool TypeExpr::unify ( TypeExpr * T1, TypeExpr * T2 ) {
 
 	      TypeExpr * T = RETRIEVE ( f1, f2->name );
 
-	      if ( T != NULL ) 
+	      if ( T != NULL )
 		answer = answer && unify ( T, f2->T );
 	      else  if ( T1->is_extensible() ) {
 		f1 = new Environment ( f2->name, f2->T, f1 );
@@ -912,7 +916,7 @@ static int env_count = 0;
 
 Environment::Environment ( char * str, TypeExpr * t, Environment * e ) : T(t), tail(e) {
 
-  env_count++; 
+  env_count++;
   name = strdup ( str );
   freed = false;
 
@@ -924,11 +928,11 @@ Environment::~Environment ( void ) {
 
   //DEC_INST ( "Environment" );
 
-  env_count--; 
+  env_count--;
 
   //  if ( env_count == 0 )
   //  printf ( "  no environments left\n" );
-  
+
   if ( env_count < 0 )
     fprintf ( stderr, "  Warning::deleted too many type environments!\n" );
 
@@ -963,17 +967,17 @@ TypeExpr * Environment::retrieve ( char * str ) {
 void TypeExpr::reset ( void ) {
 
   switch ( type ) {
-      
+
     case VARIABLE:
 
 	instance = NULL;
 	break;
-	
+
     case LIST:
-	
+
       list_base->reset();
       break;
-	
+
     case FUNCTION:
 
       domain->reset();
@@ -984,7 +988,7 @@ void TypeExpr::reset ( void ) {
 
       fields->reset();
       break;
-	
+
     default:
 
       break;
@@ -1001,7 +1005,7 @@ void Environment::reset ( void ) {
 
     e->T->reset();
     e = e->tail;
-      
+
   }
 
 }
@@ -1032,7 +1036,7 @@ bool TypeExpr::member ( TypeExpr * t, std::list<TypeExpr *> * L ) {
 
   std::list<TypeExpr *>::iterator i;
 
-  for ( i=L->begin(); i != L->end(); i++ ) 
+  for ( i=L->begin(); i != L->end(); i++ )
     if ( (*i) == t )
       return true;
 
@@ -1048,7 +1052,7 @@ TypeExpr * TypeExpr::copy ( std::list<TypeExpr *> * non_generics, std::list<Type
 
    case VARIABLE:
 
-     if ( member ( this, non_generics ) ) 
+     if ( member ( this, non_generics ) )
        result = this;
      else if ( instance == NULL ) {
        result = new TypeExpr();
@@ -1072,7 +1076,7 @@ TypeExpr * TypeExpr::copy ( std::list<TypeExpr *> * non_generics, std::list<Type
 
     case FUNCTION:
 
-      result = new TypeExpr ( domain->copy ( non_generics, garbage ), 
+      result = new TypeExpr ( domain->copy ( non_generics, garbage ),
 			      codomain->copy ( non_generics, garbage ) );
       garbage->push_back ( result );
       break;
@@ -1120,8 +1124,8 @@ TypeExpr * TypeExpr::copy_ex ( std::list<TypeExpr *> * old_vars, std::list<TypeE
 	 std::list<TypeExpr *>::iterator i, j;
 	 i = old_vars->begin();
 	 j = new_vars->begin();
-	 while ( (*i) != this && i != old_vars->end() ) { 
-           i++; j++; 
+	 while ( (*i) != this && i != old_vars->end() ) {
+           i++; j++;
          }
 
 	 ASSERT ( i != old_vars->end() );
@@ -1194,7 +1198,7 @@ void TypeExpr::compute_non_generics ( std::list<TypeExpr *> * non_generics ) {
        if ( ! member ( this, non_generics ) ) {
 	 non_generics->push_back ( this );
        }
-     } else 
+     } else
        instance->compute_non_generics ( non_generics );
 
      break;
@@ -1289,7 +1293,7 @@ Value * TypeExpr::default_value ( void ) {
 	  break;
 
       }
-   
+
       break;
 
     case LIST:

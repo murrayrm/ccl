@@ -10,7 +10,7 @@
 //   modify it under the terms of the GNU General Public License
 //   as published by the Free Software Foundation; either version 2
 //   of the License, or (at your option) any later version.
-// 
+//
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -21,6 +21,10 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 //
+
+#ifdef LINUX
+#include <string.h>
+#endif
 
 #include <stdio.h>
 #include <math.h>
@@ -37,7 +41,7 @@ SymbolTable::SymbolTable ( int n ) : num_buckets(n), num_symbols(0) {
   int i;
 
   buckets = new Symbol * [n];
-  for ( i=0; i<n; i++ ) 
+  for ( i=0; i<n; i++ )
     buckets[i] = NULL;
 
   next = NULL;
@@ -49,11 +53,11 @@ SymbolTable::~SymbolTable ( void ) {
   int i;
   Symbol * temp;
 
-  for ( i=0; i<num_buckets; i++ ) 
+  for ( i=0; i<num_buckets; i++ )
     while ( buckets[i] != NULL ) {
       temp = buckets[i];
       buckets[i] = temp->next;
-      delete temp; 
+      delete temp;
 
     }
 
@@ -74,7 +78,7 @@ int SymbolTable::hash ( const char * str ) {
 
 void SymbolTable::add ( const char * name, Value * v ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp = new Symbol ( name, v );
 
   temp->next = buckets[index];
@@ -102,7 +106,7 @@ void SymbolTable::del ( const char * name ) {
         if ( prev == temp ) {
 
 	  buckets[index] = temp->next;
-	  delete temp; 
+	  delete temp;
 	  return;
 
         } else {
@@ -124,7 +128,7 @@ void SymbolTable::del ( const char * name ) {
 
 Value * SymbolTable::get ( const char * name ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp;
 
   for ( temp = buckets[index]; temp != NULL; temp = temp->next )
@@ -136,7 +140,7 @@ Value * SymbolTable::get ( const char * name ) {
 
 Value * SymbolTable::get_previous ( const char * name ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp;
 
   for ( temp = buckets[index]; temp != NULL; temp = temp->next )
@@ -148,7 +152,7 @@ Value * SymbolTable::get_previous ( const char * name ) {
 
 Symbol * SymbolTable::get_symbol ( const char * name ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp;
 
   for ( temp = buckets[index]; temp != NULL; temp = temp->next )
@@ -160,14 +164,14 @@ Symbol * SymbolTable::get_symbol ( const char * name ) {
 
 bool SymbolTable::assign ( const char * name, Value * v ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp = NULL;
 
-  for ( temp = buckets[index]; temp != NULL; temp = temp->next ) 
-    if ( !strcmp ( temp->get_name(), name ) ) 
+  for ( temp = buckets[index]; temp != NULL; temp = temp->next )
+    if ( !strcmp ( temp->get_name(), name ) )
       break;
 
-  if ( temp == NULL ) 
+  if ( temp == NULL )
 
     return false;
 
@@ -220,7 +224,7 @@ void SymbolTable::replace ( SymbolTable * s ) {
 
     }
 
-  } 
+  }
 
 }
 
@@ -233,7 +237,7 @@ void SymbolTable::print ( FILE * fp ) {
 
   for ( i=0; i<num_buckets; i++ ) {
     //    if ( buckets[i] != NULL )
-    //  fprintf ( fp, "  bucket %d\n", i );    
+    //  fprintf ( fp, "  bucket %d\n", i );
     for ( temp=buckets[i]; temp!=NULL; temp=temp->next ) {
       fprintf ( fp, "      %x: %s: ", temp, temp->get_name() );
       if ( temp->get_value() != NULL ) {
@@ -257,7 +261,7 @@ void SymbolTable::print_names ( FILE * fp, int indent ) {
 
   for ( i=0; i<num_buckets; i++ )
     for ( temp=buckets[i]; temp!=NULL; temp=temp->next ) {
-      for ( int k = 0; k<indent; k++ ) 
+      for ( int k = 0; k<indent; k++ )
 	fprintf ( fp, " " );
       fprintf ( fp, "%s:", temp->get_name() );
       if ( temp->get_value() != NULL )
@@ -280,7 +284,7 @@ void SymbolTable::print_as_record ( FILE * fp ) {
     for ( temp=buckets[i]; temp!=NULL; temp=temp->next ) {
       fprintf ( fp, " %s := ", temp->get_name() );
       temp->get_value()->print(fp);
-      if ( ++j != num_symbols ) 
+      if ( ++j != num_symbols )
         fprintf ( fp, "," );
     }
   }
@@ -303,7 +307,7 @@ void SymbolTable::print_as_record_to_string ( std::string * str )  {
       sprintf ( buf, "%s:=", temp->get_name() );
       *str += buf;
       temp->get_value()->print_to_string ( str );
-      if ( ++j != num_symbols ) 
+      if ( ++j != num_symbols )
 	*str += ",";
     }
   }
@@ -345,7 +349,7 @@ SymbolTable * SymbolTable::copy ( void ) {
 
   for ( i=0; i<num_buckets; i++ ) {
     for ( temp=buckets[i]; temp!=NULL; temp=temp->next ) {
-      if ( temp->is_program() ) 
+      if ( temp->is_program() )
         s->add ( temp->get_name(), temp->get_prog_value()->copy() );
       else
         s->add ( temp->get_name(), temp->get_value()->copy() );
@@ -392,7 +396,7 @@ void SymbolTable::divide ( SymbolTable * dest, float frac ) {
 
 void SymbolTable::add ( const char * name, Program * p ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp = new Symbol ( name, p );
 
   temp->next = buckets[index];
@@ -403,7 +407,7 @@ void SymbolTable::add ( const char * name, Program * p ) {
 
 Program * SymbolTable::get_program ( const char * name ) {
 
-  int index = hash ( name ); 
+  int index = hash ( name );
   Symbol * temp;
 
   for ( temp = buckets[index]; temp != NULL; temp = temp->next )
@@ -415,9 +419,9 @@ Program * SymbolTable::get_program ( const char * name ) {
 
 bool member_charlist ( std::list<char *> * L, const char * str ) {
 
-  std::list<char *>::iterator i;                                
- 
-  for ( i = L->begin(); i != L->end(); i++ ) 
+  std::list<char *>::iterator i;
+
+  for ( i = L->begin(); i != L->end(); i++ )
     if ( !strcmp ( *i, str ) )
       return true;
 

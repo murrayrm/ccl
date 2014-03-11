@@ -10,7 +10,7 @@
 //   modify it under the terms of the GNU General Public License
 //   as published by the Free Software Foundation; either version 2
 //   of the License, or (at your option) any later version.
-// 
+//
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -24,6 +24,11 @@
 
 #include <sstream>
 #include <string>
+
+#ifdef LINUX
+#include <string.h>
+#endif
+
 #include "Expr.h"
 
 #define NL printf ( "\n" ); fflush ( stdout );
@@ -110,7 +115,7 @@ Value::TYPE Expr::op_arg_type ( OPERATOR op ) {
 
 }
 
-TypeExpr * Value::compute_type ( Scope * s, Environment * env, 
+TypeExpr * Value::compute_type ( Scope * s, Environment * env,
 				 std::list<TypeExpr *> * non_generics, std::list<TypeExpr *> * garbage ) {
 
   TypeExpr * answer = NULL;
@@ -130,7 +135,7 @@ TypeExpr * Value::compute_type ( Scope * s, Environment * env,
 
       if ( list_value()->size() == 0 )
 	answer = LIST_TYPE ( VAR_TYPE );
-      else 
+      else
 	answer = LIST_TYPE ( ( *list_value()->begin() )->compute_type ( s, env, non_generics, garbage ) );
       break;
 
@@ -193,7 +198,7 @@ bool Expr::type_check ( Scope * s, Environment * env ) {
 
 static std::list<char *> * rec_vars;
 
-TypeExpr * Expr::compute_type ( Scope * s, Environment * env, 
+TypeExpr * Expr::compute_type ( Scope * s, Environment * env,
 				std::list<TypeExpr *> * non_generics, std::list<TypeExpr *> * garbage ) {
 
   //printf ( "checking " ); print(); printf ( "\n" );
@@ -219,7 +224,7 @@ static bool in_list ( const char * name, std::list<char *> * L ) {
 
 static int ctcount = 0;
 
-TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env, 
+TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 				    std::list<TypeExpr *> * non_generics, std::list<TypeExpr *> * garbage ) {
 
 #ifdef VERBOSE
@@ -238,7 +243,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
     case VARIABLE:
 
-      { 
+      {
 
 #ifdef VERBOSE
 	INDENT(ctcount-1); printf ( "%d. looking for %s in {", ctcount-1, name );
@@ -317,7 +322,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 	std::list<TypeExpr *>::iterator i;
 
-	for ( i = old_vars->begin(); i != old_vars->end(); i++ ) { 
+	for ( i = old_vars->begin(); i != old_vars->end(); i++ ) {
 	  TypeExpr * t = new TypeExpr();
 	  garbage->push_back ( t );
 	  new_vars->push_back ( t );
@@ -394,7 +399,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 	  j++;
 
 	}
-  
+
 	delete new_vars;
         delete temp_args;
 
@@ -418,7 +423,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 	} else {
 
-	  answer = T->get_list_base(); 
+	  answer = T->get_list_base();
 
 	}
 
@@ -466,15 +471,15 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 	TypeExpr * T1 = e1->compute_type_aux ( s, env, non_generics, garbage ),
 	  * T2 = e2->compute_type_aux ( s, env, non_generics, garbage );
-	
+
 	if ( TypeExpr::unify ( T1, T2 ) )
-	  
+
 	  answer = ATOMIC_TYPE(Value::BOOLEAN);
-	
-	else 
-	  
+
+	else
+
       TYPE_ERROR2 ( e1, T1, e2, T2, "Could not compare (using = or !=) arguments with different types." );
-	
+
       } else if ( LIST_OP(op) ) {
 
 	switch ( op ) {
@@ -491,7 +496,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 		answer = T2;
 
-	      else 
+	      else
 
         TYPE_ERROR2 ( e1, T1, e2, T2, "Cannot insert element into list because of incompatible types." );
 
@@ -511,7 +516,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 		answer = T2;
 
-	      else 
+	      else
 
         TYPE_ERROR2 ( e1, T1, e2, T2, "Cannot concatenate lists of different types." );
 
@@ -531,7 +536,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 		answer = T1->get_list_base();
 
-	      else 
+	      else
 
         TYPE_ERROR2 ( e1, T1, e2, T2, "Cannot take list element because either the argument is not a list, or the index is not an integer." );
 
@@ -578,7 +583,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 	  if ( ! TypeExpr::unify ( T1, T2 ) ) {
 
-	    TYPE_ERROR2 ( e1, T1, e2, T2, 
+	    TYPE_ERROR2 ( e1, T1, e2, T2,
           "Cannot apply &lt;&lt; operator because the records have at least one field with the same name but different types." );
 
 	  } else {
@@ -625,7 +630,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
 	  answer = ATOMIC_TYPE ( op_type ( op ) );
 
-	} else 
+	} else
 
       TYPE_ERROR2 ( e1, T1, e2, T2, "Could not apply operator to arguments because of a type error." );
 
@@ -661,7 +666,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
                 answer = T2;
 
-	      else 
+	      else
 
         TYPE_ERROR1 ( e1, T1, "If statement either has a non-Boolean guard or body parts with incompatible body parts." );
 
@@ -669,7 +674,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 
       break;
 
-    case RECORD:      
+    case RECORD:
 
       {
 
@@ -695,7 +700,7 @@ TypeExpr * Expr::compute_type_aux ( Scope * s, Environment * env,
 #ifdef VERBOSE
   INDENT(ctcount-1);
   printf ( "%d. got ", --ctcount ); answer->print(); NL;
-#endif 
+#endif
 
   return answer;
 
@@ -726,7 +731,7 @@ void TypeExpr::take_out ( std::list<TypeExpr *> * garbage ) {
 
 }
 
-Environment * SymbolTable::to_env ( Scope * s, Environment * env, 
+Environment * SymbolTable::to_env ( Scope * s, Environment * env,
 				   std::list<TypeExpr *> * non_generics, std::list<TypeExpr *> * garbage ) {
 
   Environment * e = NULL;
@@ -737,7 +742,7 @@ Environment * SymbolTable::to_env ( Scope * s, Environment * env,
 
     for ( temp=buckets[i]; temp!=NULL; temp=temp->next )
 
-      e = new Environment ( temp->get_name(), 
+      e = new Environment ( temp->get_name(),
 			    temp->get_value()->compute_type ( s, env, non_generics, garbage ),
 			    e );
 
@@ -763,7 +768,7 @@ bool Expr::has_type ( Value::TYPE t, Scope * s, Environment * env ) {
 
   // printf ( "got " ); T->print(); printf ( " and " ); U->print(); NL;
 
-  TypeExpr::take_out ( garbage ); 
+  TypeExpr::take_out ( garbage );
   delete garbage;
 
   return answer;
