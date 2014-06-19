@@ -3,3 +3,6 @@
 
 # ignore Qt user settings file
 ccl.pro.user
+
+# ignore parser generated file
+parser.hpp
