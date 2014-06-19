@@ -6,3 +6,4 @@ ccl.pro.user
 
 # ignore parser generated file
 parser.hpp
+parser.cpp
