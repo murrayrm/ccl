@@ -52,7 +52,9 @@ unix:!symbian {
 
 OTHER_FILES += \
     parser.y \
-    lexer.l
+    lexer.l \
+    LICENSE \
+    .gitignore
 
 
 include(flex.pri)
