@@ -1,4 +1,5 @@
 # ignore objects and archives
 *.[oa]
 
+# ignore Qt user settings file
 ccl.pro.user
