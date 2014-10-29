@@ -10,7 +10,7 @@
 //   modify it under the terms of the GNU General Public License
 //   as published by the Free Software Foundation; either version 2
 //   of the License, or (at your option) any later version.
-// 
+//
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -24,6 +24,11 @@
 
 #include <stdio.h>
 #include <string>
+
+#ifdef LINUX
+#include <string.h>
+#endif
+
 #include "SymbolTable.h"
 #include "Expr.h"
 #include "Program.h"
@@ -38,24 +43,24 @@ int get_count ( void ) {
 
 }
 
-Value::Value ( int n ) : type(INTEGER) { 
+Value::Value ( int n ) : type(INTEGER) {
 
   data.int_val = n;
-  instance_counter++; 
+  instance_counter++;
 
 }
 
-Value::Value ( double r ) : type(REAL) { 
+Value::Value ( double r ) : type(REAL) {
 
   data.real_val = r;
-  instance_counter++; 
+  instance_counter++;
 
 }
 
 Value::Value ( bool b ) : type(BOOLEAN) {
 
   data.bool_val = b;
-  instance_counter++; 
+  instance_counter++;
 
 }
 
@@ -69,7 +74,7 @@ Value::Value ( const char * str ) : type(STRING) {
 
 Value::Value ( Value::TYPE t ) : type(t) {
 
-  if ( type == LIST ) 
+  if ( type == LIST )
     LISTVAL = new std::list<Value*>;
 
   if ( type == RECORD )
@@ -121,7 +126,7 @@ Value::Value ( EXTERNAL_CCLI_FUNCTION f, TypeExpr * T, std::list<TypeExpr *> * a
     for ( i = arg_types()->begin(); i != arg_types()->end(); i++ ) {
       printf ( "    %x = ", *i ); (*i)->print(); printf ( "\n" );
     }
-  
+
     printf ( "  non generics:\n" );
 
     for ( i = data.efunc_val.non_generics->begin(); i != data.efunc_val.non_generics->end(); i++ ) {
@@ -184,9 +189,9 @@ void Value::free_data ( void ) {
 	  return_type()->free_children(non_generics());
 	  delete return_type();
         }
-	
+
 	while ( arg_types()->size() > 0 ) {
-	  
+
 	  TypeExpr * T = *(arg_types()->begin());
 	  arg_types()->pop_front();
 	  if ( ! TypeExpr::member ( T, non_generics() ) ) {
@@ -194,19 +199,19 @@ void Value::free_data ( void ) {
 	    T->free_children(non_generics());
 	    delete T;
 	  }
-	  
+
 	}
-	
+
 	std::list<TypeExpr *>::iterator i;
-	
+
 	for ( i = non_generics()->begin(); i != non_generics()->end(); i++ ) {
 	  //printf ( "deleting %x\n", *i );
 	  delete *i;
 	}
-	
+
 	delete arg_types();
 	delete non_generics();
-	
+
       }
 
     }
@@ -269,7 +274,7 @@ void Value::reset ( Value * v ) {
     break;
 
   case STRING:
-    
+
     data.str_val = v->data.str_val;
     break;
 
@@ -412,7 +417,7 @@ std::string Value::string_value ( void ) {
 
 double Value::num_value ( void ) {
 
-  if ( type == REAL ) 
+  if ( type == REAL )
     return data.real_val;
   if ( type == INTEGER )
     return (double) data.int_val;
@@ -453,7 +458,7 @@ void Value::addField ( const char * name, Value * v ) {
     exit ( -1 );
   }
 
-  data.fields->add ( name, v );  
+  data.fields->add ( name, v );
 
 }
 
@@ -637,7 +642,7 @@ Value * Value::copy ( void ) {
 
       // really shouldn't need to copy all of this during evaluation
 
-      std::list<TypeExpr *> 
+      std::list<TypeExpr *>
         * non_generics = new std::list<TypeExpr *>,
 	* new_args = new std::list<TypeExpr *>,
         * new_vars = new std::list<TypeExpr *>,
@@ -645,12 +650,12 @@ Value * Value::copy ( void ) {
 
       std::list<TypeExpr *>::iterator i;
 
-      for ( i = old_vars->begin(); i != old_vars->end(); i++ ) 
+      for ( i = old_vars->begin(); i != old_vars->end(); i++ )
 	new_vars->push_back ( new TypeExpr() );
 
       TypeExpr * R = return_type()->copy_ex ( old_vars, new_vars );
 
-      for ( i = arg_types()->begin(); i != arg_types()->end(); i++ ) 
+      for ( i = arg_types()->begin(); i != arg_types()->end(); i++ )
 	new_args->push_back ( (*i)->copy_ex ( old_vars, new_vars ) );
 
       v = new Value ( data.efunc_val.f, R, new_args );
@@ -664,7 +669,7 @@ Value * Value::copy ( void ) {
 
   default:
 
-    fprintf ( stderr, "unimplemented copy method (%d): ", type ); print(stderr); 
+    fprintf ( stderr, "unimplemented copy method (%d): ", type ); print(stderr);
     fprintf ( stderr, "\n" );
     exit ( -1 );
 
@@ -700,7 +705,7 @@ void Symbol::clear ( void ) {
 Symbol::~Symbol ( void ) {
 
   free ( name );
- 
+
   if ( v != NULL ) {
 
     if ( v != previous ) {
@@ -708,7 +713,7 @@ Symbol::~Symbol ( void ) {
       delete v;
       delete previous;
 
-    } else 
+    } else
 
       delete v;
 

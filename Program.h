@@ -10,7 +10,7 @@
 //   modify it under the terms of the GNU General Public License
 //   as published by the Free Software Foundation; either version 2
 //   of the License, or (at your option) any later version.
-// 
+//
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -28,6 +28,10 @@
 #include <list>
 
 #if defined(WIN) || defined(linux)
+#include <string.h>
+#endif
+
+#ifdef LINUX
 #include <string.h>
 #endif
 
@@ -101,8 +105,8 @@ public:
   Program ( bool alloc, char * file, int line );
   virtual ~Program ( void );
 
-  inline void set_symtab ( SymbolTable * s ) { 
-    symtab = s; 
+  inline void set_symtab ( SymbolTable * s ) {
+    symtab = s;
   }
   inline SymbolTable * get_symtab ( void ) { return symtab; }
   inline SymbolTable * get_param_symtab ( void ) { return param_symtab; }
@@ -113,16 +117,16 @@ public:
   inline std::list<Expr *> * get_insts ( void ) { return insts; }
   inline void set_parent ( Program * p ) { parent = p; }
 
-  inline void set_non_generics ( std::list<TypeExpr *> * ng ) { 
+  inline void set_non_generics ( std::list<TypeExpr *> * ng ) {
     if ( non_generics != NULL ) {
       //  std::list<TypeExpr *>::iterator w;
       //for ( w=non_generics->begin(); w != non_generics->end(); w++ ) {
       //  printf ( "%x::set_non_generics: deleting %x\n", this, *w );
       //  delete (*w);
       //}
-      delete non_generics; 
+      delete non_generics;
     }
-    non_generics = ng; 
+    non_generics = ng;
   }
 
   inline std::list<TypeExpr *> * get_non_generics ( void ) { return non_generics; }
@@ -156,7 +160,7 @@ public:
 
   inline char * get_filename ( void ) { return filename; }
   inline char * get_name ( void ) { return name; }
-  inline void set_name ( const char * n ) { 
+  inline void set_name ( const char * n ) {
     free ( name );
     name = strdup ( n );
   }
@@ -164,9 +168,9 @@ public:
 
   inline std::list<TypeExpr *> * get_garbage() { return garbage; }
 
-  static Program * Composition ( Program * p, std::list<Expr *> * exprlist, 
+  static Program * Composition ( Program * p, std::list<Expr *> * exprlist,
                                  char * binder, std::list<Value *> * vals, std::list<char *> * sharelist,
-                                 Scope * scope, Environment * env, 
+                                 Scope * scope, Environment * env,
                                  char * filename, int linenum );
 
 private:
@@ -211,7 +215,7 @@ private:
 
   std::list<Clause *> * clauses;
   Clause * init_clause;
-  
+
 };
 
 class InstProgram : public Program {

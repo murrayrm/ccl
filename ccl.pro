@@ -12,6 +12,10 @@ macx {
   QMAKE_CXXFLAGS += -fast -w
 }
 
+linux-g++* {
+  QMAKE_CXXFLAGS += -Ofast -DLINUX -w
+}
+
 QT       -= core x86_64
 
 TARGET = ccl
