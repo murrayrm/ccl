@@ -27,7 +27,7 @@
 
 #include <list>
 
-#ifdef WIN
+#if defined(WIN) || defined(linux)
 #include <string.h>
 #endif
 
