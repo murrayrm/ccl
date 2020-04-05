@@ -27,6 +27,7 @@
 //
 //
 
+#include <libgen.h>
 #include <string.h>
 #include <string>
 #include "Expr.h"
@@ -287,30 +288,54 @@ include        BEGIN(incl);
                      ERROR ( "Includes nested too deeply, redefine MAX_INCLUDE_DEPTH." );
                    }
 
+		   /* Get the path to the current file name */
+		   std::string path =
+		     dirname(current_file_name[include_stack_ptr]);
+		   path = path + "/";
+
+		   /* Save the current parser state */
                    include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
 
+		   /* Create the name of the file we are looking for */
                    std::string name;
-
                    if ( yytext != NULL ) {
                      name = yytext;
                    } else {
                      ERROR ( "yytext is NULL." );
                    }
-
                    name = name + ".gro";
 
-                   current_file_name[include_stack_ptr] = strdup ( name.c_str() );
-
-                   yyin = fopen( name.c_str(), "r" );
+		   if (yytext[0] == '/')
+		     /* Absolute path specified */
+		     yyin = fopen( name.c_str(), "r" );
+		   else
+		     /* Try to open file relative to current directory */
+		     yyin = fopen( (path + name).c_str(), "r" );
 
                    if ( ! yyin ) {
+		     char *p, *gropath;
 
-                     std::string path = "include/" + name;
-                     //printf ( "opening %s\n", path.c_str() ); fflush(stdout);
-                     yyin = fopen( path.c_str(), "r" );
+		     /* File not found in current directory; look along path */
+		     if ((gropath = getenv("GROPATH")) == NULL)
+		       /* If no path, look for local include directory */
+		       gropath = strdup((path + "/include").c_str());
+		     else
+		       /* Make a copy of the path so we can modify in strtok */
+		       gropath = strdup(gropath);
 
+		     for (p = strtok(gropath, ":"); !yyin && p != NULL;
+			  p = strtok(NULL, ":")) {
+		       path = p; path = path + "/";
+		       yyin = fopen( (path + name).c_str(), "r" );
+		     }
+
+		     /* Free up the space we allocated */
+		     free(gropath);
                    }
 
+		   /* Save the full filename of the file we opened */
+                   current_file_name[include_stack_ptr] =
+		     strdup ( (path + name).c_str() );
 
                    if ( ! yyin ) {
 
