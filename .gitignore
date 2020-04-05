@@ -4,6 +4,12 @@
 # ignore Qt user settings file
 ccl.pro.user
 
+# ignore files created by qmake
+.qmake.stash
+Makefile
+
 # ignore parser generated file
 parser.hpp
 parser.cpp
+lexer.cpp
+
