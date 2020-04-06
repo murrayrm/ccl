@@ -1,0 +1,10 @@
+CCL - Computation and Control Library
+Eric Klavins, circa 2003
+
+To compile:
+
+    qmake
+    make
+
+This will create the file libccl.a, which can be used by other
+programs (like `gro`).
